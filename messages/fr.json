@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "attractions": "Attractions",
+    "bookings": "Mes Réservations",
+    "guides": "Guides Touristiques",
+    "events": "Événements",
+    "login": "Connexion",
+    "signup": "S'inscrire"
+  },
+  "attraction": {
+    "readinessScore": "Score de Préparation",
+    "openingHours": "Heures d'Ouverture",
+    "entryFee": "Frais d'Entrée",
+    "downloadOffline": "Télécharger Hors Ligne",
+    "lastUpdated": "Mis à jour le {date}"
+  },
+  "booking": {
+    "bookNow": "Réserver",
+    "partySize": "Taille du Groupe",
+    "totalAmount": "Montant Total",
+    "payWithMomo": "Payer avec Mobile Money",
+    "payWithCard": "Payer par Carte",
+    "queuedOffline": "Enregistré hors ligne — sera soumis dès le retour en ligne"
+  },
+  "offline": {
+    "banner": "Vous êtes hors ligne. Affichage du contenu en cache."
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "attractions": "Attractions",
+    "bookings": "My Bookings",
+    "guides": "Tour Guides",
+    "events": "Events",
+    "login": "Log In",
+    "signup": "Sign Up"
+  },
+  "attraction": {
+    "readinessScore": "Readiness Score",
+    "openingHours": "Opening Hours",
+    "entryFee": "Entry Fee",
+    "downloadOffline": "Download for Offline",
+    "lastUpdated": "Last updated {date}"
+  },
+  "booking": {
+    "bookNow": "Book Now",
+    "partySize": "Party Size",
+    "totalAmount": "Total Amount",
+    "payWithMomo": "Pay with Mobile Money",
+    "payWithCard": "Pay with Card",
+    "queuedOffline": "Saved offline — will submit when you're back online"
+  },
+  "offline": {
+    "banner": "You're offline. Showing cached content."
+  }
+}
