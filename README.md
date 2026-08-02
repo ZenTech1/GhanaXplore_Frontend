@@ -45,25 +45,3 @@ src/
 messages/
   en.json, fr.json  — add tw/ga/ee/ha as translations become available (NFR-7)
 ```
-
-## What's real vs placeholder
-
-- **Real, ready to build on:** the folder structure, i18n routing, the API client,
-  the full IndexedDB offline schema + sync manager, and the TypeScript domain types.
-- **Placeholder, swap once Figma is ready:** every `page.tsx` under `(tourist)`,
-  `(auth)`, `(operator)` — these render minimal markup just to prove the route
-  and data-fetching pattern. Color tokens in `globals.css` are also placeholders.
-
-## Known open questions to raise with the team
-
-1. **Google Maps offline caching** — Google's ToS restricts caching map tiles.
-   Confirm this is acceptable, or budget time to swap to Mapbox before FR-8/FR-30
-   work starts.
-2. **iOS PWA limitations** — background sync and push notifications are limited
-   on iOS Safari. Worth setting expectations with stakeholders on what "installable
-   PWA" means per platform.
-3. **Offline bundle assembly** — right now `DownloadOfflineButton` builds the bundle
-   client-side from whatever fields the API already returns. Once the backend has
-   a dedicated offline-bundle endpoint (pre-compressed images, food guide, language
-   tips bundled server-side per FR-36/FR-37), swap that component to just fetch and
-   cache the response instead of assembling it here.

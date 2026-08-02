@@ -1,7 +1,8 @@
-import { attractionsApi } from '@/lib/api/attractions';
-import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
-import { DownloadOfflineButton } from '@/components/attractions/DownloadOfflineButton';
+import { HeaderNav } from '@/components/layout/HeaderNav';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
+import { Footer } from '@/components/layout/Footer';
+import { AttractionDetail } from '@/components/attractions/AttractionDetail';
 
 export default async function AttractionDetailPage({
   params,
@@ -9,23 +10,22 @@ export default async function AttractionDetailPage({
   params: { id: string; locale: string };
 }) {
   setRequestLocale(params.locale);
-  const attraction = await attractionsApi.getById(params.id).catch(() => null);
-  if (!attraction) notFound();
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="font-display text-3xl">{attraction.name}</h1>
-      <p className="text-text-muted mt-1">
-        {attraction.region} · {attraction.district}
-      </p>
-      <p className="mt-4">{attraction.description}</p>
-      <div className="mt-6 flex items-center gap-4">
-        <span className="text-sm">Readiness Score: {attraction.attractionReadinessScore}/10</span>
-        <span className="text-sm text-text-muted">
-          Last updated {new Date(attraction.lastUpdated).toLocaleDateString()}
-        </span>
-      </div>
-      <DownloadOfflineButton attraction={attraction} />
-    </main>
+    <div className="bg-background text-on-surface font-body min-h-screen pb-16 md:pb-0">
+      {/* Top Header Navigation */}
+      <HeaderNav />
+
+      {/* Attraction Detail Content */}
+      <main>
+        <AttractionDetail id={params.id} />
+      </main>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
+    </div>
   );
 }
