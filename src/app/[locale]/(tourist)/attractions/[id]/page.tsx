@@ -12,9 +12,11 @@ export default async function AttractionDetailPage({
   setRequestLocale(params.locale);
 
   return (
-    <div className="bg-background text-on-surface font-body min-h-screen pb-16 md:pb-0">
+    <div className="bg-background text-on-surface font-body min-h-screen pb-0">
       {/* Top Header Navigation */}
-      <HeaderNav />
+      <div className="hidden md:block">
+        <HeaderNav />
+      </div>
 
       {/* Attraction Detail Content */}
       <main>
@@ -22,10 +24,9 @@ export default async function AttractionDetailPage({
       </main>
 
       {/* Footer */}
-      <Footer />
-
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </div>
   );
 }
