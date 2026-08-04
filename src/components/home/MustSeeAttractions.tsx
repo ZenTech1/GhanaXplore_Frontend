@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 export function MustSeeAttractions() {
   return (
     <>
@@ -13,7 +15,7 @@ export function MustSeeAttractions() {
 
           <div className="bento-grid">
             {/* Kakum National Park */}
-            <div className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden group shadow-lg border border-outline-variant/20 cursor-pointer">
+            <Link href="/attractions/kakum-national-park" className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden group shadow-lg border border-outline-variant/20 cursor-pointer block">
               <div
                 className="w-full h-full bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
                 style={{
@@ -30,10 +32,10 @@ export function MustSeeAttractions() {
                   Walk above the trees and witness the biodiversity of one of West Africa&apos;s last remaining rainforests.
                 </p>
               </div>
-            </div>
+            </Link>
 
             {/* Cape Coast Castle */}
-            <div className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group shadow-lg border border-outline-variant/20 cursor-pointer">
+            <Link href="/attractions/cape-coast-castle" className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group shadow-lg border border-outline-variant/20 cursor-pointer block">
               <div
                 className="w-full h-full bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
                 style={{
@@ -47,10 +49,10 @@ export function MustSeeAttractions() {
                 </span>
                 <h3 className="font-headline-md text-xl text-white">Cape Coast Castle</h3>
               </div>
-            </div>
+            </Link>
 
             {/* Mole National Park */}
-            <div className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group shadow-lg border border-outline-variant/20 cursor-pointer">
+            <Link href="/attractions/mole-national-park" className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group shadow-lg border border-outline-variant/20 cursor-pointer block">
               <div
                 className="w-full h-full bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
                 style={{
@@ -64,7 +66,7 @@ export function MustSeeAttractions() {
                 </span>
                 <h3 className="font-headline-md text-xl text-white">Mole Safari Experience</h3>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -75,7 +77,7 @@ export function MustSeeAttractions() {
         
         <div className="flex flex-col gap-8">
           {/* Attraction 1: Kakum */}
-          <div className="bg-surface-container-low rounded-3xl overflow-hidden border border-outline-variant/20 group cursor-pointer active:scale-[0.98] transition-all">
+          <Link href="/attractions/kakum-national-park" className="bg-surface-container-low rounded-3xl overflow-hidden border border-outline-variant/20 group cursor-pointer active:scale-[0.98] transition-all block">
             <div className="aspect-video relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -110,10 +112,10 @@ export function MustSeeAttractions() {
                 </div>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Attraction 2: Makola Market */}
-          <div className="bg-surface-container-low rounded-3xl overflow-hidden border border-outline-variant/20 group cursor-pointer active:scale-[0.98] transition-all">
+          <Link href="/attractions/makola-market" className="bg-surface-container-low rounded-3xl overflow-hidden border border-outline-variant/20 group cursor-pointer active:scale-[0.98] transition-all block">
             <div className="aspect-video relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -148,19 +150,19 @@ export function MustSeeAttractions() {
                 </div>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Mobile Bento Teaser Tiles */}
         <div className="mt-12 grid grid-cols-2 gap-4">
-          <div className="col-span-1 bg-tertiary text-on-tertiary-container p-6 rounded-3xl flex flex-col justify-between h-48 shadow-lg shadow-tertiary/20 cursor-pointer active:scale-95 transition-all">
+          <Link href="/attractions" className="col-span-1 bg-tertiary text-on-tertiary-container p-6 rounded-3xl flex flex-col justify-between h-48 shadow-lg shadow-tertiary/20 cursor-pointer active:scale-95 transition-all block">
             <span className="material-symbols-outlined text-[32px]" data-icon="restaurant">restaurant</span>
             <h5 className="font-headline-md leading-tight">Taste the Heritage</h5>
-          </div>
-          <div className="col-span-1 bg-secondary-fixed text-on-secondary-fixed p-6 rounded-3xl flex flex-col justify-between h-48 shadow-lg shadow-secondary/20 cursor-pointer active:scale-95 transition-all">
+          </Link>
+          <Link href="/attractions" className="col-span-1 bg-secondary-fixed text-on-secondary-fixed p-6 rounded-3xl flex flex-col justify-between h-48 shadow-lg shadow-secondary/20 cursor-pointer active:scale-95 transition-all block">
             <span className="material-symbols-outlined text-[32px]" data-icon="event">event</span>
             <h5 className="font-headline-md leading-tight">Festivals &amp; Events</h5>
-          </div>
+          </Link>
         </div>
       </section>
     </>

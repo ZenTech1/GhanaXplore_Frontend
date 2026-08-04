@@ -148,7 +148,7 @@ const SAMPLE_ATTRACTIONS: AttractionItem[] = [
 
 export function AttractionsCatalog() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(['Coastal & Beaches']);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['Safari & Wildlife', 'Coastal & Beaches', 'Heritage Sites', 'Adventure']);
   const [selectedRegion, setSelectedRegion] = useState('All Regions');
   const [maxPrice, setMaxPrice] = useState(5000);
   const [selectedAccessibility, setSelectedAccessibility] = useState<string[]>(['Family Friendly']);
@@ -177,10 +177,10 @@ export function AttractionsCatalog() {
 
   const handleClearAll = () => {
     setSearchQuery('');
-    setSelectedCategories([]);
+    setSelectedCategories(['Safari & Wildlife', 'Coastal & Beaches', 'Heritage Sites', 'Adventure']);
     setSelectedRegion('All Regions');
     setMaxPrice(5000);
-    setSelectedAccessibility([]);
+    setSelectedAccessibility(['Family Friendly']);
     setMinReadiness(0);
     setMobileChip('All');
   };
@@ -209,17 +209,15 @@ export function AttractionsCatalog() {
         return false;
       }
 
-      // Desktop Categories (if any checked)
-      if (selectedCategories.length > 0) {
-        const matchesCategory = selectedCategories.some((cat) => {
-          if (cat === 'Safari & Wildlife') return item.category === 'Safari & Wildlife' || item.tags.includes('Safari') || item.tags.includes('Wildlife');
-          if (cat === 'Coastal & Beaches') return item.category === 'Coastal & Beaches' || item.tags.includes('Coastal');
-          if (cat === 'Heritage Sites') return item.category === 'Heritage Sites' || item.tags.includes('Heritage') || item.tags.includes('History');
-          if (cat === 'Adventure') return item.category === 'Adventure' || item.tags.includes('Adventure');
-          return true;
-        });
-        if (!matchesCategory) return false;
-      }
+      // Desktop Categories
+      const matchesCategory = selectedCategories.some((cat) => {
+        if (cat === 'Safari & Wildlife') return item.category === 'Safari & Wildlife' || item.tags.includes('Safari') || item.tags.includes('Wildlife');
+        if (cat === 'Coastal & Beaches') return item.category === 'Coastal & Beaches' || item.tags.includes('Coastal');
+        if (cat === 'Heritage Sites') return item.category === 'Heritage Sites' || item.tags.includes('Heritage') || item.tags.includes('History');
+        if (cat === 'Adventure') return item.category === 'Adventure' || item.tags.includes('Adventure');
+        return false;
+      });
+      if (!matchesCategory) return false;
 
       // Max price
       if (item.priceValue > maxPrice) return false;
