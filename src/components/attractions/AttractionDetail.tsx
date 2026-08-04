@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -446,11 +446,78 @@ const ATTRACTIONS_DETAIL_DATA: Record<string, AttractionDetailData> = {
   }
 };
 
+// ---------------------------------------------------------------------------
+// Reveal-on-scroll hook (bidirectional)
+//
+// A single shared IntersectionObserver watches every element that carries a
+// `data-reveal="<key>"` attribute. Unlike a "reveal once" observer, this one
+// keeps every target under observation for the life of the page and toggles
+// membership in `revealed` both ways:
+//   - entry.isIntersecting === true  -> add the key  (animate in)
+//   - entry.isIntersecting === false -> remove the key (reset for next time)
+// Combined with the CSS transitions (which already animate both toward and
+// away from `.is-visible`), this makes sections/elements animate in when
+// scrolled to from either direction, and re-animate every time they're
+// scrolled back into view. Because IntersectionObserver fires an initial
+// callback for anything already on-screen, elements visible at load/refresh
+// still reveal immediately with no extra logic needed.
+//
+// rootMargin is asymmetric on purpose: a small negative bottom margin means
+// a section counts as "in view" a little before it's fully on screen when
+// scrolling down, while a small negative top margin does the same when
+// scrolling up — so the animation starts just before the section is front
+// and center rather than only after it's already fully visible.
+// ---------------------------------------------------------------------------
+function useReveal() {
+  const [revealed, setRevealed] = useState<Set<string>>(() => new Set());
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setRevealed((prev) => {
+          let changed = false;
+          const next = new Set(prev);
+          entries.forEach((entry) => {
+            const key = entry.target.getAttribute('data-reveal');
+            if (!key) return;
+            if (entry.isIntersecting) {
+              if (!next.has(key)) {
+                next.add(key);
+                changed = true;
+              }
+            } else {
+              if (next.has(key)) {
+                next.delete(key);
+                changed = true;
+              }
+            }
+          });
+          return changed ? next : prev;
+        });
+      },
+      { threshold: 0.12, rootMargin: '-8% 0px -8% 0px' }
+    );
+
+    const targets = document.querySelectorAll('[data-reveal]');
+    targets.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  return revealed;
+}
+
 export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetailProps) {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
   const [downloadingOffline, setDownloadingOffline] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+
+  // Hero visibility (load-in animation, not scroll-driven)
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Scroll/section reveal state, keyed by data-reveal id
+  const revealed = useReveal();
 
   // Normalize id or fallback to kakum if not found
   const normalizedId = ATTRACTIONS_DETAIL_DATA[id] ? id : 'kakum-national-park';
@@ -488,6 +555,22 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
 
   const recommendations = getRecommendations();
 
+  // Trigger the hero load-in animation on mount. We wait for two animation
+  // frames so the browser has actually painted the "hidden" (opacity: 0)
+  // state before we flip to visible — this guarantees the CSS transition
+  // plays reliably on every load/refresh, instead of racing an arbitrary
+  // setTimeout against paint timing.
+  useEffect(() => {
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setIsVisible(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  }, []);
+
   return (
     <div className="w-full bg-background font-body-md text-on-background selection:bg-secondary-container/30 pb-0">
       <style>{`
@@ -505,6 +588,83 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
         .hero-gradient-custom {
           background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 70%, rgba(252,249,248,1) 100%);
         }
+        
+        /* Animation Classes */
+        .animate-fade-up {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-fade-up.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        
+        .animate-fade-left {
+          opacity: 0;
+          transform: translateX(-30px);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-fade-left.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        
+        .animate-fade-right {
+          opacity: 0;
+          transform: translateX(30px);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-fade-right.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        
+        .animate-fade-scale {
+          opacity: 0;
+          transform: scale(0.95);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-fade-scale.is-visible {
+          opacity: 1;
+          transform: scale(1);
+        }
+        
+        .animate-stagger-item {
+          opacity: 0;
+          transform: translateY(20px) scale(0.97);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-stagger-item.is-visible {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        
+        .animate-hero {
+          opacity: 0;
+          transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-hero.is-visible {
+          opacity: 1;
+        }
+        
+        .animate-mobile-card {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-mobile-card.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
       `}</style>
 
       {/* ========================================== */}
@@ -513,7 +673,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
       <div className="hidden md:block">
         {/* Hero Section */}
         <section className="relative w-full h-[716px] min-h-[500px] flex items-end overflow-hidden">
-          <div className="absolute inset-0 z-0">
+          <div className={`absolute inset-0 z-0 animate-hero ${isVisible ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
             <div
               className="w-full h-full bg-cover bg-center"
               style={{
@@ -523,7 +683,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           </div>
           <div className="relative z-10 max-w-7xl mx-auto w-full px-container-padding-desktop pb-12">
-            <div className="flex flex-col gap-4 max-w-2xl">
+            <div className={`flex flex-col gap-4 max-w-2xl animate-fade-up ${isVisible ? 'is-visible' : ''}`} style={{ transitionDelay: '0.3s' }}>
               <div className="flex items-center gap-3">
                 <span className="bg-secondary-container text-on-secondary-container px-4 py-1 rounded-full font-label-lg text-label-lg flex items-center gap-1">
                   <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -552,40 +712,45 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
             {/* Left: Content (col-span-8) */}
             <div className="col-span-8 flex flex-col gap-section-gap">
               {/* Essential Stats */}
-              <div className="grid grid-cols-3 gap-6">
-                <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/30 flex flex-col gap-2">
-                  <span className="text-outline font-label-lg text-label-lg uppercase">Entry Fee</span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-headline-md text-headline-md text-primary">{data.price}</span>
-                    <span className="text-on-surface-variant font-label-sm text-label-sm">{data.priceUnit}</span>
+              <div data-reveal="stats" className="grid grid-cols-3 gap-6">
+                {[
+                  { delay: 0.1, label: 'Entry Fee', value: data.price, unit: data.priceUnit, col: 1 },
+                  { delay: 0.2, label: 'Readiness Score', value: `${data.readinessPct}%`, unit: data.readinessText, col: 2 },
+                  { delay: 0.3, label: 'Categories', value: data.categories.join(' · '), unit: '', col: 3 }
+                ].map((stat, idx) => (
+                  <div 
+                    key={idx}
+                    className={`animate-fade-up ${revealed.has('stats') ? 'is-visible' : ''} bg-surface-container-low p-6 rounded-2xl border border-outline-variant/30 flex flex-col gap-2`}
+                    style={{ transitionDelay: `${stat.delay}s` }}
+                  >
+                    <span className="text-outline font-label-lg text-label-lg uppercase">{stat.label}</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-headline-md text-headline-md text-primary">{stat.value}</span>
+                      {stat.unit && <span className="text-on-surface-variant font-label-sm text-label-sm">{stat.unit}</span>}
+                    </div>
+                    {stat.label === 'Categories' && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {data.categories.map((cat) => (
+                          <span key={cat} className="bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-full text-label-sm font-label-sm">
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {stat.label === 'Readiness Score' && (
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+                          verified
+                        </span>
+                        <span className="text-primary font-label-sm text-label-sm">{data.readinessText}</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/30 flex flex-col gap-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-outline font-label-lg text-label-lg uppercase">Readiness Score</span>
-                    <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      verified
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-headline-md text-headline-md text-primary">{data.readinessPct}%</span>
-                    <span className="text-primary font-label-sm text-label-sm">{data.readinessText}</span>
-                  </div>
-                </div>
-                <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/30 flex flex-col gap-2">
-                  <span className="text-outline font-label-lg text-label-lg uppercase">Categories</span>
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {data.categories.map((cat) => (
-                      <span key={cat} className="bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-full text-label-sm font-label-sm">
-                        {cat}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* Description */}
-              <div className="flex flex-col gap-6">
+              <div data-reveal="description" className={`flex flex-col gap-6 animate-fade-up ${revealed.has('description') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
                 <h2 className="font-headline-lg text-headline-lg text-primary">{data.descriptionTitle}</h2>
                 <div className="space-y-4 text-on-surface-variant font-body-lg text-body-lg leading-relaxed">
                   {data.paragraphs.map((para, idx) => (
@@ -595,8 +760,8 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
               </div>
 
               {/* Tips / Heritage Section (Bento Style) */}
-              <div className="bento-grid-custom">
-                <div className="col-span-7 bg-primary-container text-on-primary-container p-8 rounded-[32px] flex flex-col justify-between min-h-[300px]">
+              <div data-reveal="tips" className="bento-grid-custom">
+                <div className={`col-span-7 bg-primary-container text-on-primary-container p-8 rounded-[32px] flex flex-col justify-between min-h-[300px] animate-fade-up ${revealed.has('tips') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
                   <div>
                     <h3 className="font-headline-md text-headline-md mb-4 text-white">Local Guide: Pro Tips</h3>
                     <ul className="space-y-4 text-white">
@@ -619,7 +784,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
                     Verified by Ghana Tourism Authority
                   </div>
                 </div>
-                <div className="col-span-5 bg-secondary-container p-8 rounded-[32px] flex flex-col gap-6">
+                <div className={`col-span-5 bg-secondary-container p-8 rounded-[32px] flex flex-col gap-6 animate-fade-up ${revealed.has('tips') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.2s' }}>
                   <h3 className="font-headline-md text-headline-md text-on-secondary-container">Etiquette</h3>
                   <p className="text-on-secondary-container/90 font-body-md text-body-md italic">
                     &quot;{data.etiquette.quote}&quot;
@@ -638,7 +803,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
               </div>
 
               {/* Reviews */}
-              <div className="flex flex-col gap-8">
+              <div data-reveal="reviews" className={`flex flex-col gap-8 animate-fade-up ${revealed.has('reviews') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
                 <div className="flex justify-between items-end">
                   <h2 className="font-headline-lg text-headline-lg text-primary">Traveler Voices</h2>
                   <button className="text-primary font-label-lg text-label-lg hover:underline flex items-center gap-2">
@@ -648,7 +813,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   {data.reviews.map((rev, idx) => (
-                    <div key={idx} className="p-6 rounded-2xl bg-surface border border-outline-variant/30 shadow-sm flex flex-col gap-4">
+                    <div key={idx} className={`animate-stagger-item ${revealed.has('reviews') ? 'is-visible' : ''} p-6 rounded-2xl bg-surface border border-outline-variant/30 shadow-sm flex flex-col gap-4`} style={{ transitionDelay: `${0.2 + idx * 0.15}s` }}>
                       <div className="flex justify-between items-start">
                         <div className="flex gap-3 items-center">
                           <div className={`w-10 h-10 rounded-full ${rev.avatarBg} flex items-center justify-center font-bold text-on-surface-variant`}>
@@ -686,8 +851,8 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
             </div>
 
             {/* Right: Sidebar Sticky (col-span-4) */}
-            <div className="col-span-4">
-              <div className="sticky top-28 flex flex-col gap-8">
+            <div data-reveal="sidebar" className="col-span-4">
+              <div className={`sticky top-28 flex flex-col gap-8 animate-fade-right ${revealed.has('sidebar') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.15s' }}>
                 {/* Booking Card */}
                 <div className="bg-surface-container-lowest p-8 rounded-[32px] border border-outline-variant/50 shadow-xl flex flex-col gap-6">
                   <div className="flex justify-between items-center">
@@ -788,17 +953,17 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
         </section>
 
         {/* Nearby Recommendations */}
-        <section className="bg-surface-container-low py-section-gap">
-          <div className="max-w-7xl mx-auto px-container-padding-desktop">
+        <section data-reveal="recommendations" className="bg-surface-container-low py-section-gap">
+          <div className={`max-w-7xl mx-auto px-container-padding-desktop animate-fade-up ${revealed.has('recommendations') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
             <div className="flex flex-col gap-8">
               <div className="flex items-center gap-4">
-                <h2 className="font-headline-lg text-headline-lg text-primary animate-pulse">Continue Your Journey</h2>
+                <h2 className="font-headline-lg text-headline-lg text-primary">Continue Your Journey</h2>
                 <div className="h-[1px] flex-grow bg-outline-variant/50"></div>
                 <span className="font-label-lg text-label-lg text-outline">Powered by ReloM8</span>
               </div>
               <div className="grid grid-cols-3 gap-gutter">
-                {recommendations.map((rec) => (
-                  <Link key={rec.id} href={`/attractions/${rec.id}`} className="group cursor-pointer">
+                {recommendations.map((rec, idx) => (
+                  <Link key={rec.id} href={`/attractions/${rec.id}`} className={`group cursor-pointer animate-stagger-item ${revealed.has('recommendations') ? 'is-visible' : ''}`} style={{ transitionDelay: `${0.2 + idx * 0.12}s` }}>
                     <div className="aspect-video rounded-3xl overflow-hidden mb-4 relative">
                       <div
                         className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
@@ -843,9 +1008,10 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
         {/* Immersive Hero Section */}
         <section className="relative h-[574px] w-full overflow-hidden">
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className={`absolute inset-0 bg-cover bg-center animate-hero ${isVisible ? 'is-visible' : ''}`}
             style={{
               backgroundImage: `url('${data.mobileHeroImage}')`,
+              transitionDelay: '0.1s'
             }}
           />
           <div className="absolute inset-0 hero-gradient-custom"></div>
@@ -882,7 +1048,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
           </div>
           
           {/* Hero Content Bottom */}
-          <div className="absolute bottom-6 left-0 right-0 px-container-padding-mobile">
+          <div className={`absolute bottom-6 left-0 right-0 px-container-padding-mobile animate-fade-up ${isVisible ? 'is-visible' : ''}`} style={{ transitionDelay: '0.3s' }}>
             <div className="flex flex-wrap gap-2 mb-3">
               <span className="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-sm flex items-center gap-1">
                 <span
@@ -908,7 +1074,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
         {/* Main Content & Bottom Margin for Floating Action Bar */}
         <main className="px-container-padding-mobile pb-32 -mt-4 relative z-10">
           {/* Quick Stats Bento Row */}
-          <div className="grid grid-cols-2 gap-3 mb-8">
+          <div data-reveal="mobileStats" className={`grid grid-cols-2 gap-3 mb-8 animate-fade-up ${revealed.has('mobileStats') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
             <div className="bg-surface-container-low p-4 rounded-2xl border border-outline-variant/30">
               <div className="flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined text-primary">verified</span>
@@ -946,7 +1112,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
           </div>
 
           {/* Features Bar */}
-          <div className="flex justify-between items-center py-4 px-2 mb-8 bg-surface border-y border-outline-variant/20 overflow-x-auto hide-scrollbar gap-6">
+          <div data-reveal="mobileFeatures" className={`flex justify-between items-center py-4 px-2 mb-8 bg-surface border-y border-outline-variant/20 overflow-x-auto hide-scrollbar gap-6 animate-fade-up ${revealed.has('mobileFeatures') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.15s' }}>
             <div className="flex flex-col items-center gap-1 shrink-0">
               <span className="material-symbols-outlined text-primary p-2 bg-primary-fixed/30 rounded-full">download_for_offline</span>
               <span className="text-[10px] font-bold text-on-surface-variant">Offline Guide</span>
@@ -972,7 +1138,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
           </div>
 
           {/* Expandable Details */}
-          <div className="space-y-4 mb-10">
+          <div data-reveal="mobileDetails" className={`space-y-4 mb-10 animate-fade-up ${revealed.has('mobileDetails') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.2s' }}>
             {/* Description */}
             <details className="group bg-white rounded-2xl border border-outline-variant/30 overflow-hidden" open>
               <summary className="flex justify-between items-center p-5 cursor-pointer list-none">
@@ -1028,7 +1194,7 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
           </div>
 
           {/* Map Section */}
-          <section className="mb-10">
+          <section data-reveal="mobileMap" className={`mb-10 animate-fade-up ${revealed.has('mobileMap') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
             <h3 className="font-headline-md text-on-surface mb-4 text-lg font-bold">Location</h3>
             <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-outline-variant/30">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1051,14 +1217,14 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
           </section>
 
           {/* Verified Reviews */}
-          <section className="mb-10">
+          <section data-reveal="mobileReviews" className={`mb-10 animate-fade-up ${revealed.has('mobileReviews') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
             <div className="flex justify-between items-end mb-4">
               <h3 className="font-headline-md text-on-surface text-lg font-bold">Verified Reviews</h3>
               <a className="text-primary font-label-sm hover:underline" href="#">See all</a>
             </div>
             <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 -mx-container-padding-mobile px-container-padding-mobile">
               {data.reviews.map((rev, idx) => (
-                <div key={idx} className="min-w-[280px] bg-white p-5 rounded-2xl border border-outline-variant/30 shadow-sm">
+                <div key={idx} className={`animate-stagger-item ${revealed.has('mobileReviews') ? 'is-visible' : ''} min-w-[280px] bg-white p-5 rounded-2xl border border-outline-variant/30 shadow-sm`} style={{ transitionDelay: `${0.15 + idx * 0.12}s` }}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className={`w-10 h-10 rounded-full ${rev.avatarBg} flex items-center justify-center font-bold text-primary`}>
                       {rev.avatarInitials}
@@ -1087,11 +1253,11 @@ export function AttractionDetail({ id = 'kakum-national-park' }: AttractionDetai
           </section>
 
           {/* Nearby Attractions */}
-          <section className="mb-10">
+          <section data-reveal="mobileRecommendations" className={`mb-10 animate-fade-up ${revealed.has('mobileRecommendations') ? 'is-visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
             <h3 className="font-headline-md text-on-surface mb-4 text-lg font-bold">You Might Also Like</h3>
             <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 -mx-container-padding-mobile px-container-padding-mobile">
-              {recommendations.map((rec) => (
-                <Link key={rec.id} href={`/attractions/${rec.id}`} className="min-w-[180px] group cursor-pointer block shrink-0">
+              {recommendations.map((rec, idx) => (
+                <Link key={rec.id} href={`/attractions/${rec.id}`} className={`animate-stagger-item ${revealed.has('mobileRecommendations') ? 'is-visible' : ''} min-w-[180px] group cursor-pointer block shrink-0`} style={{ transitionDelay: `${0.15 + idx * 0.1}s` }}>
                   <div className="h-32 rounded-2xl bg-gray-200 overflow-hidden mb-2 relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img

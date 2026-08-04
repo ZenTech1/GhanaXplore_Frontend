@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 export function TopRegions() {
@@ -54,11 +55,100 @@ export function TopRegions() {
     },
   ];
 
+  const desktopSectionRef = useRef<HTMLElement>(null);
+  const mobileSectionRef = useRef<HTMLElement>(null);
+  const [desktopVisible, setDesktopVisible] = useState(false);
+  const [mobileVisible, setMobileVisible] = useState(false);
+
+  useEffect(() => {
+    const observerOptions: IntersectionObserverInit = { threshold: 0.15 };
+
+    const makeObserver = (setVisible: (v: boolean) => void) =>
+      new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          setVisible(entry.isIntersecting);
+        });
+      }, observerOptions);
+
+    const desktopObserver = makeObserver(setDesktopVisible);
+    const mobileObserver = makeObserver(setMobileVisible);
+
+    if (desktopSectionRef.current) desktopObserver.observe(desktopSectionRef.current);
+    if (mobileSectionRef.current) mobileObserver.observe(mobileSectionRef.current);
+
+    return () => {
+      desktopObserver.disconnect();
+      mobileObserver.disconnect();
+    };
+  }, []);
+
   return (
     <>
+      <style jsx>{`
+        @keyframes regionsFadeUp {
+          0% {
+            opacity: 0;
+            transform: translateY(24px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes regionsCardIn {
+          0% {
+            opacity: 0;
+            transform: translateY(36px) scale(0.97);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .regions-anim {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        .regions-anim.is-visible {
+          animation: regionsFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .regions-card {
+          opacity: 0;
+          transform: translateY(36px) scale(0.97);
+        }
+        .regions-card.is-visible {
+          animation: regionsCardIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .regions-card-delay-0.is-visible {
+          animation-delay: 0.05s;
+        }
+        .regions-card-delay-1.is-visible {
+          animation-delay: 0.18s;
+        }
+        .regions-card-delay-2.is-visible {
+          animation-delay: 0.31s;
+        }
+        .regions-card-delay-3.is-visible {
+          animation-delay: 0.44s;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .regions-anim,
+          .regions-card {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+          }
+        }
+      `}</style>
+
       {/* DESKTOP TOP REGIONS SECTION */}
-      <section className="hidden md:block py-section-gap px-container-padding-mobile md:px-container-padding-desktop max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+      <section
+        ref={desktopSectionRef}
+        className="hidden md:block py-section-gap px-container-padding-mobile md:px-container-padding-desktop max-w-7xl mx-auto"
+      >
+        <div
+          className={`regions-anim flex flex-col md:flex-row justify-between items-end mb-12 gap-4 ${desktopVisible ? 'is-visible' : ''}`}
+        >
           <div>
             <span className="text-primary font-label-lg tracking-widest uppercase mb-2 block">
               Cradle of Culture
@@ -71,8 +161,11 @@ export function TopRegions() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-          {desktopRegions.map((region) => (
-            <div key={region.id} className="group cursor-pointer">
+          {desktopRegions.map((region, i) => (
+            <div
+              key={region.id}
+              className={`regions-card regions-card-delay-${i} group cursor-pointer ${desktopVisible ? 'is-visible' : ''}`}
+            >
               <div className="relative h-96 rounded-xl overflow-hidden mb-4 shadow-sm border border-outline-variant/10">
                 <div
                   className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
@@ -90,8 +183,8 @@ export function TopRegions() {
       </section>
 
       {/* MOBILE TOP REGIONS SECTION */}
-      <section className="md:hidden mt-section-gap px-container-padding-mobile">
-        <div className="flex justify-between items-end mb-6">
+      <section ref={mobileSectionRef} className="md:hidden mt-section-gap px-container-padding-mobile">
+        <div className={`regions-anim flex justify-between items-end mb-6 ${mobileVisible ? 'is-visible' : ''}`}>
           <div className="space-y-1">
             <h3 className="font-headline-md text-headline-md text-on-surface">Top Regions</h3>
             <p className="text-on-surface-variant font-label-sm">Explore our 16 vibrant destinations</p>
@@ -102,8 +195,11 @@ export function TopRegions() {
         </div>
 
         <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-container-padding-mobile px-container-padding-mobile snap-x snap-mandatory">
-          {mobileRegions.map((region) => (
-            <div key={region.id} className="snap-start flex-shrink-0 w-44 group cursor-pointer">
+          {mobileRegions.map((region, i) => (
+            <div
+              key={region.id}
+              className={`regions-card regions-card-delay-${i} snap-start flex-shrink-0 w-44 group cursor-pointer ${mobileVisible ? 'is-visible' : ''}`}
+            >
               <div className="aspect-[3/4] rounded-2xl overflow-hidden relative mb-3 border border-outline-variant/10 shadow-sm transition-transform group-active:scale-95">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -123,4 +219,3 @@ export function TopRegions() {
     </>
   );
 }
-

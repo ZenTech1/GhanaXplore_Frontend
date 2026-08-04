@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 export interface AttractionItem {
@@ -156,6 +156,11 @@ export function AttractionsCatalog() {
   const [sortBy, setSortBy] = useState('Recommended');
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [mobileChip, setMobileChip] = useState('All');
+  
+  // Refs for animation
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animatedItems, setAnimatedItems] = useState<Set<string>>(new Set());
 
   const toggleCategory = (cat: string) => {
     setSelectedCategories((prev) =>
@@ -184,6 +189,34 @@ export function AttractionsCatalog() {
     setMinReadiness(0);
     setMobileChip('All');
   };
+
+  // Intersection Observer for section visibility
+  useEffect(() => {
+    const observerOptions: IntersectionObserverInit = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -5% 0px',
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      });
+    }, observerOptions);
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+      
+      // Check if already visible on mount
+      const rect = sectionRef.current.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        setIsVisible(true);
+      }
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const filteredAttractions = useMemo(() => {
     return SAMPLE_ATTRACTIONS.filter((item) => {
@@ -233,11 +266,168 @@ export function AttractionsCatalog() {
     });
   }, [searchQuery, selectedCategories, selectedRegion, maxPrice, minReadiness, sortBy, mobileChip]);
 
+  // Trigger animation for individual items with relaxed staggered delays
+  useEffect(() => {
+    // Reset animated items when filtered attractions change
+    setAnimatedItems(new Set());
+    
+    if (isVisible && filteredAttractions.length > 0) {
+      const timeouts: NodeJS.Timeout[] = [];
+      filteredAttractions.forEach((item, index) => {
+        // Each card gets a delay: first at 200ms, then 180ms between each
+        const delay = 200 + index * 180;
+        const timeout = setTimeout(() => {
+          setAnimatedItems(prev => new Set(prev).add(item.id));
+        }, delay);
+        timeouts.push(timeout);
+      });
+      return () => timeouts.forEach(clearTimeout);
+    }
+  }, [isVisible, filteredAttractions]);
+
   return (
-    <div className="w-full">
-      {/* Mobile Top View Header & Search */}
+    <div ref={sectionRef} className="w-full">
+      <style jsx>{`
+        @keyframes cardPopIn {
+          0% {
+            opacity: 0;
+            transform: translateY(30px) scale(0.92);
+          }
+          60% {
+            opacity: 0.9;
+            transform: translateY(-4px) scale(1.01);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        
+        @keyframes fadeUp {
+          0% {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeLeft {
+          0% {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes fadeRight {
+          0% {
+            opacity: 0;
+            transform: translateX(30px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes fadeScale {
+          0% {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        
+        .animate-fade-up {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-fade-up.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        
+        .animate-fade-left {
+          opacity: 0;
+          transform: translateX(-30px);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-fade-left.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        
+        .animate-fade-right {
+          opacity: 0;
+          transform: translateX(30px);
+          transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-fade-right.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        
+        .animate-sidebar {
+          opacity: 0;
+          transform: translateX(-20px);
+          transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-sidebar.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        
+        .animate-chip {
+          opacity: 0;
+          transform: scale(0.9);
+          transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .animate-chip.is-visible {
+          opacity: 1;
+          transform: scale(1);
+        }
+        
+        /* Card pop-in animation with bounce effect */
+        .card-pop-in {
+          opacity: 0;
+          transform: translateY(30px) scale(0.92);
+        }
+        .card-pop-in.is-visible {
+          animation: cardPopIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .glass-effect {
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(8px);
+        }
+        
+        .card-shadow {
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+        .card-shadow:hover {
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+
+      {/* MOBILE VIEW */}
       <div className="md:hidden pt-4 px-container-padding-mobile max-w-7xl mx-auto">
-        <section className="mt-2">
+        {/* Header - Animate */}
+        <section className={`animate-fade-up ${isVisible ? 'is-visible' : ''}`} style={{ transitionDelay: '0.05s' }}>
           <div className="relative group">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">
               search
@@ -252,65 +442,49 @@ export function AttractionsCatalog() {
           </div>
         </section>
 
-        {/* Filter Chips Scrollable */}
+        {/* Filter Chips - Animate with stagger */}
         <section className="mt-6">
           <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
-            <button
-              onClick={() => setMobileChip('All')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-label-lg whitespace-nowrap transition-all ${
-                mobileChip === 'All'
-                  ? 'bg-primary text-on-primary shadow-md'
-                  : 'bg-surface-container-low text-on-surface border border-outline-variant/30'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">explore</span>
-              All
-            </button>
-            <button
-              onClick={() => setMobileChip('Safari')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-label-lg whitespace-nowrap transition-all ${
-                mobileChip === 'Safari'
-                  ? 'bg-primary text-on-primary shadow-md'
-                  : 'bg-secondary-container/10 text-secondary border border-secondary/20 hover:bg-secondary-container/20'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">eco</span>
-              Safari
-            </button>
-            <button
-              onClick={() => setMobileChip('Coastal')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-label-lg whitespace-nowrap transition-all ${
-                mobileChip === 'Coastal'
-                  ? 'bg-primary text-on-primary shadow-md'
-                  : 'bg-tertiary-container/10 text-tertiary border border-tertiary/20 hover:bg-tertiary-container/20'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">waves</span>
-              Coastal
-            </button>
-            <button
-              onClick={() => setMobileChip('Heritage')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-label-lg whitespace-nowrap transition-all ${
-                mobileChip === 'Heritage'
-                  ? 'bg-primary text-on-primary shadow-md'
-                  : 'bg-primary-fixed/30 text-on-primary-fixed-variant border border-primary-fixed/50 hover:bg-primary-fixed/40'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">temple_buddhist</span>
-              Heritage
-            </button>
+            {['All', 'Safari', 'Coastal', 'Heritage'].map((chip, index) => (
+              <button
+                key={chip}
+                onClick={() => setMobileChip(chip)}
+                className={`animate-chip ${isVisible ? 'is-visible' : ''} flex items-center gap-2 px-4 py-2 rounded-full font-label-lg whitespace-nowrap transition-all ${
+                  mobileChip === chip
+                    ? 'bg-primary text-on-primary shadow-md'
+                    : chip === 'All' 
+                      ? 'bg-surface-container-low text-on-surface border border-outline-variant/30'
+                      : chip === 'Safari'
+                      ? 'bg-secondary-container/10 text-secondary border border-secondary/20 hover:bg-secondary-container/20'
+                      : chip === 'Coastal'
+                      ? 'bg-tertiary-container/10 text-tertiary border border-tertiary/20 hover:bg-tertiary-container/20'
+                      : 'bg-primary-fixed/30 text-on-primary-fixed-variant border border-primary-fixed/50 hover:bg-primary-fixed/40'
+                }`}
+                style={{ transitionDelay: `${100 + index * 80}ms` }}
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {chip === 'All' ? 'explore' : chip === 'Safari' ? 'eco' : chip === 'Coastal' ? 'waves' : 'temple_buddhist'}
+                </span>
+                {chip}
+              </button>
+            ))}
           </div>
         </section>
 
         {/* Mobile Discovery Section */}
         <section className="mt-8 space-y-6">
-          <h2 className="font-headline-md text-headline-md text-on-surface">Recommended for you</h2>
-          {filteredAttractions.map((item) => (
+          <h2 className={`animate-fade-left ${isVisible ? 'is-visible' : ''} font-headline-md text-headline-md text-on-surface`} style={{ transitionDelay: '0.2s' }}>
+            Recommended for you
+          </h2>
+          
+          {filteredAttractions.map((item, index) => (
             <Link key={item.id} href={`/attractions/${item.id}`} className="block">
-              <article className="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/20 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] transition-transform active:scale-[0.98]">
-                <div className="relative h-56">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.image} alt={item.alt} className="w-full h-full object-cover" />
+              <article 
+                className={`card-pop-in ${animatedItems.has(item.id) ? 'is-visible' : ''} bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/20 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] transition-transform active:scale-[0.98]`}
+                style={{ animationDelay: `${index * 180}ms` }}
+              >
+                <div className="relative h-56 overflow-hidden">
+                  <div className="w-full h-full bg-cover bg-center transition-transform duration-700 hover:scale-110" style={{ backgroundImage: `url(${item.image})` }} />
                   <div className="absolute top-4 right-4 bg-surface/90 backdrop-blur px-3 py-1 rounded-full border border-primary/20 flex items-center gap-1">
                     <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                       star
@@ -345,18 +519,23 @@ export function AttractionsCatalog() {
               </article>
             </Link>
           ))}
+          
           {filteredAttractions.length === 0 && (
-            <div className="text-center py-12 text-on-surface-variant">
-              No attractions match your current filters. Try resetting your search.
+            <div className={`animate-fade-scale ${isVisible ? 'is-visible' : ''} text-center py-12 text-on-surface-variant`} style={{ transitionDelay: '0.3s' }}>
+              <span className="material-symbols-outlined text-4xl block mb-2 text-outline">search_off</span>
+              <p className="font-body-lg">No attractions match your current filters.</p>
+              <button onClick={handleClearAll} className="mt-4 text-primary font-label-lg hover:underline">
+                Reset filters
+              </button>
             </div>
           )}
         </section>
       </div>
 
-      {/* Desktop Layout View */}
+      {/* DESKTOP VIEW */}
       <div className="hidden md:block max-w-7xl mx-auto px-container-padding-desktop py-8">
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 mb-8 text-on-surface-variant font-label-lg">
+        <nav className={`animate-fade-up ${isVisible ? 'is-visible' : ''} flex items-center gap-2 mb-8 text-on-surface-variant font-label-lg`} style={{ transitionDelay: '0.05s' }}>
           <Link href="/" className="hover:text-primary flex items-center gap-1">
             <span className="material-symbols-outlined text-[18px]">home</span>
             Home
@@ -369,7 +548,7 @@ export function AttractionsCatalog() {
 
         <div className="flex flex-col md:flex-row gap-gutter">
           {/* Left Sidebar Filters */}
-          <aside className="w-full md:w-64 flex-shrink-0 space-y-8">
+          <aside className={`animate-sidebar ${isVisible ? 'is-visible' : ''} w-full md:w-64 flex-shrink-0 space-y-8`} style={{ transitionDelay: '0.1s' }}>
             <div className="flex items-center justify-between">
               <h2 className="font-headline-md text-headline-md text-on-surface">Filters</h2>
               <button onClick={handleClearAll} className="text-primary font-label-lg hover:underline">
@@ -381,8 +560,8 @@ export function AttractionsCatalog() {
             <section className="space-y-4">
               <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline">Category</h3>
               <div className="flex flex-col gap-3">
-                {['Safari & Wildlife', 'Coastal & Beaches', 'Heritage Sites', 'Adventure'].map((cat) => (
-                  <label key={cat} className="flex items-center gap-3 cursor-pointer group">
+                {['Safari & Wildlife', 'Coastal & Beaches', 'Heritage Sites', 'Adventure'].map((cat, index) => (
+                  <label key={cat} className={`animate-fade-left ${isVisible ? 'is-visible' : ''} flex items-center gap-3 cursor-pointer group`} style={{ transitionDelay: `${150 + index * 80}ms` }}>
                     <input
                       type="checkbox"
                       checked={selectedCategories.includes(cat)}
@@ -396,8 +575,8 @@ export function AttractionsCatalog() {
             </section>
 
             {/* Price Range */}
-            <section className="space-y-4">
-              <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline">Price Range (GHS)</h3>
+            <section className={`animate-fade-left ${isVisible ? 'is-visible' : ''}`} style={{ transitionDelay: '0.3s' }}>
+              <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline mb-4">Price Range (GHS)</h3>
               <input
                 type="range"
                 min="0"
@@ -406,15 +585,15 @@ export function AttractionsCatalog() {
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-full h-2 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary"
               />
-              <div className="flex justify-between font-label-lg text-on-surface-variant">
+              <div className="flex justify-between font-label-lg text-on-surface-variant mt-2">
                 <span>0</span>
                 <span>{maxPrice >= 5000 ? '5000+' : `${maxPrice}`}</span>
               </div>
             </section>
 
             {/* Region */}
-            <section className="space-y-4">
-              <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline">Region</h3>
+            <section className={`animate-fade-left ${isVisible ? 'is-visible' : ''}`} style={{ transitionDelay: '0.35s' }}>
+              <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline mb-4">Region</h3>
               <select
                 value={selectedRegion}
                 onChange={(e) => setSelectedRegion(e.target.value)}
@@ -431,20 +610,21 @@ export function AttractionsCatalog() {
             </section>
 
             {/* Accessibility */}
-            <section className="space-y-4">
-              <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline">Accessibility</h3>
+            <section className={`animate-fade-left ${isVisible ? 'is-visible' : ''}`} style={{ transitionDelay: '0.4s' }}>
+              <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline mb-4">Accessibility</h3>
               <div className="flex flex-wrap gap-2">
-                {['Wheelchair', 'Family Friendly', 'Guided Tours'].map((acc) => {
+                {['Wheelchair', 'Family Friendly', 'Guided Tours'].map((acc, index) => {
                   const isSelected = selectedAccessibility.includes(acc);
                   return (
                     <button
                       key={acc}
                       onClick={() => toggleAccessibility(acc)}
-                      className={`px-4 py-1.5 rounded-full font-label-lg transition-all ${
+                      className={`animate-chip ${isVisible ? 'is-visible' : ''} px-4 py-1.5 rounded-full font-label-lg transition-all ${
                         isSelected
                           ? 'bg-primary-container/10 border border-primary text-primary'
                           : 'border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
                       }`}
+                      style={{ transitionDelay: `${450 + index * 80}ms` }}
                     >
                       {acc}
                     </button>
@@ -454,8 +634,8 @@ export function AttractionsCatalog() {
             </section>
 
             {/* Readiness Score Filter */}
-            <section className="space-y-4">
-              <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline">Min. Readiness Score</h3>
+            <section className={`animate-fade-left ${isVisible ? 'is-visible' : ''}`} style={{ transitionDelay: '0.5s' }}>
+              <h3 className="font-label-lg text-label-lg uppercase tracking-wider text-outline mb-4">Min. Readiness Score</h3>
               <button
                 onClick={() => setMinReadiness((prev) => (prev === 8 ? 0 : 8))}
                 className={`w-full flex items-center gap-2 rounded-xl p-3 transition-colors ${
@@ -473,7 +653,7 @@ export function AttractionsCatalog() {
           {/* Right Content */}
           <div className="flex-1 space-y-gutter">
             {/* Search and Stats */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className={`animate-fade-up ${isVisible ? 'is-visible' : ''} flex flex-col md:flex-row md:items-center gap-4`} style={{ transitionDelay: '0.15s' }}>
               <div className="relative flex-1">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
                 <input
@@ -500,17 +680,20 @@ export function AttractionsCatalog() {
               </div>
             </div>
 
-            {/* Grid of Attraction Cards */}
+            {/* Grid of Attraction Cards - with smooth pop-in animation */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-              {filteredAttractions.map((item) => (
+              {filteredAttractions.map((item, index) => (
                 <div
                   key={item.id}
-                  className="group bg-surface rounded-3xl overflow-hidden card-shadow transition-all hover:-translate-y-1 duration-300 border border-outline-variant/10 flex flex-col justify-between"
+                  className={`card-pop-in ${animatedItems.has(item.id) ? 'is-visible' : ''} group bg-surface rounded-3xl overflow-hidden card-shadow transition-all hover:-translate-y-1 duration-300 border border-outline-variant/10 flex flex-col justify-between`}
+                  style={{ animationDelay: `${index * 180}ms` }}
                 >
-                  <Link href={`/attractions/${item.id}`} className="block">
-                    <div className="relative aspect-[16/9]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={item.image} alt={item.alt} className="w-full h-full object-cover" />
+                  <Link href={`/attractions/${item.id}`} className="block flex-1">
+                    <div className="relative aspect-[16/9] overflow-hidden">
+                      <div 
+                        className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
+                        style={{ backgroundImage: `url(${item.image})` }} 
+                      />
                       {item.badge && (
                         <div className="absolute top-4 left-4">
                           <div
@@ -580,13 +763,13 @@ export function AttractionsCatalog() {
             </div>
 
             {filteredAttractions.length === 0 && (
-              <div className="bg-surface-container-low rounded-3xl p-12 text-center text-on-surface-variant">
+              <div className={`animate-fade-scale ${isVisible ? 'is-visible' : ''} bg-surface-container-low rounded-3xl p-12 text-center text-on-surface-variant`} style={{ transitionDelay: '0.3s' }}>
                 <span className="material-symbols-outlined text-4xl mb-2 text-outline">search_off</span>
                 <p className="text-body-lg font-bold">No attractions found</p>
                 <p className="text-body-md">Try clearing or adjusting your filters to discover more destinations.</p>
                 <button
                   onClick={handleClearAll}
-                  className="mt-4 bg-primary text-on-primary px-6 py-2 rounded-xl font-label-lg hover:opacity-90"
+                  className="mt-4 bg-primary text-on-primary px-6 py-2 rounded-xl font-label-lg hover:opacity-90 transition-opacity"
                 >
                   Reset Filters
                 </button>
@@ -594,7 +777,7 @@ export function AttractionsCatalog() {
             )}
 
             {/* Pagination */}
-            <div className="flex justify-center items-center gap-2 pt-8">
+            <div className={`animate-fade-up ${isVisible ? 'is-visible' : ''} flex justify-center items-center gap-2 pt-8`} style={{ transitionDelay: '0.4s' }}>
               <button className="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant hover:bg-surface-container transition-colors">
                 <span className="material-symbols-outlined">chevron_left</span>
               </button>
