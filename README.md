@@ -30,6 +30,8 @@ src/
     (tourist)/attractions, bookings      — public tourist-facing routes
     (auth)/login, register              — auth routes
     (operator)/dashboard                 — operator/SME routes (FR-39 to FR-42)
+    (admin)/admin                        — national analytics, operator verification, and content moderation
+                                             admin pages (sample data; API/auth not connected)
     layout.tsx                           — i18n provider, offline banner, global shell
   components/
     attractions/, booking/, offline/, layout/, ui/
