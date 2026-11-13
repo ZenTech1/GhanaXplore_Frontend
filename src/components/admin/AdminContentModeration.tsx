@@ -152,6 +152,16 @@ export const initialItems: ModerationItem[] = [
   },
 ];
 
+const initialPendingCount = initialItems.filter(
+  (item) => item.status === 'Pending' || item.status === 'Flagged',
+).length;
+const initialFlaggedCount = initialItems.filter((item) => item.status === 'Flagged').length;
+const initialCriticalCount = initialItems.filter(
+  (item) =>
+    item.severity === 'High Risk' &&
+    (item.status === 'Pending' || item.status === 'Flagged'),
+).length;
+
 const navigation = [
   { label: 'National Analytics', icon: 'leaderboard', href: '/admin' },
   { label: 'Operator Verification', icon: 'verified_user', href: '/admin/operator-verification' },
@@ -433,10 +443,10 @@ export function AdminContentModeration() {
             </h1>
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-label-lg text-primary">
-                {pendingCount} Pending Tasks
+                {12 + pendingCount - initialPendingCount} Pending Tasks
               </span>
               <span className="inline-flex items-center rounded-full bg-secondary-container/20 px-3 py-1 text-label-lg text-on-secondary-container">
-                Critical: {criticalCount}
+                Critical: {3 + criticalCount - initialCriticalCount}
               </span>
             </div>
           </div>
@@ -494,7 +504,7 @@ export function AdminContentModeration() {
           <div className="mb-7 grid grid-cols-1 gap-4 md:grid-cols-3 lg:mb-10 lg:gap-6">
             <SummaryCard
               label="Pending Reviews"
-              value={(1284 + pendingCount - 5).toLocaleString('en-US')}
+              value={(1284 + pendingCount - initialPendingCount).toLocaleString('en-US')}
               detail="+12% from yesterday"
               icon="pending_actions"
               color="primary"
@@ -502,7 +512,7 @@ export function AdminContentModeration() {
             />
             <SummaryCard
               label="Reported Content"
-              value={String(42 + flaggedCount - 2)}
+              value={String(42 + flaggedCount - initialFlaggedCount)}
               detail={flaggedCount > 0 ? 'Requires immediate action' : 'No urgent reports'}
               icon="report"
               color="error"

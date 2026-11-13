@@ -92,8 +92,8 @@ const navItems = [
   { name: 'National Analytics', icon: 'analytics', href: '/admin' },
   { name: 'Operator Verification', icon: 'fact_check', href: '/admin/operator-verification' },
   { name: 'Content Moderation', icon: 'rule', href: '/admin/content-moderation' },
-  { name: 'Revenue Tracking', icon: 'payments', href: '/admin/revenue-tracking' },
-  { name: 'Settings', icon: 'settings', href: '/admin/settings' },
+  { name: 'Tourism Reports', icon: 'description', href: '/admin/revenue-tracking' },
+  { name: 'Portal Settings', icon: 'settings', href: '/admin/settings' },
 ];
 
 function Icon({

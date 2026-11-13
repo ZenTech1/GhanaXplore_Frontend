@@ -37,8 +37,8 @@ const navigation = [
   { label: 'National Analytics', icon: 'analytics', href: '/admin' },
   { label: 'Operator Verification', icon: 'fact_check', href: '/admin/operator-verification' },
   { label: 'Content Moderation', icon: 'rule', href: '/admin/content-moderation' },
-  { label: 'Revenue Tracking', icon: 'payments', href: '#revenue-tracking' },
-  { label: 'Settings', icon: 'settings', href: '#settings' },
+  { label: 'Tourism Reports', icon: 'description', href: '/admin/revenue-tracking' },
+  { label: 'Portal Settings', icon: 'settings', href: '/admin/settings' },
 ];
 
 function Icon({
