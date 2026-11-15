@@ -59,10 +59,10 @@ const initialBookings: Booking[] = [
 ];
 
 const operatorNavigation = [
-  { label: 'Dashboard', icon: 'dashboard', href: '#dashboard', section: true },
-  { label: 'Attractions', icon: 'landscape', href: '#attractions', section: false },
-  { label: 'Bookings', icon: 'calendar_month', href: '#recent-bookings', section: true },
-  { label: 'Analytics', icon: 'analytics', href: '#analytics', section: true },
+  { label: 'Dashboard', icon: 'dashboard', href: '/dashboard', section: true },
+  { label: 'Attractions', icon: 'landscape', href: '/operator/attractions', section: true },
+  { label: 'Bookings', icon: 'calendar_month', href: '/dashboard#recent-bookings', section: true },
+  { label: 'Analytics', icon: 'analytics', href: '/dashboard#analytics', section: true },
   { label: 'Settings', icon: 'settings', href: '#', section: false },
 ];
 
@@ -121,11 +121,7 @@ export function OperatorDashboard() {
 
   function handleNavigation(label: string, section: boolean) {
     if (section) return;
-    setNotice(
-      label === 'Attractions'
-        ? 'Attraction management is not connected in this demo.'
-        : `${label} is not available in this dashboard demo.`,
-    );
+    setNotice(`${label} is not available in this dashboard demo.`);
     setIsMobileMenuOpen(false);
   }
 
@@ -225,16 +221,13 @@ export function OperatorDashboard() {
               <span className="truncate text-[10px] text-on-surface-variant">Labadi Beach Resort</span>
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setNotice('Attraction management is not connected in this demo.');
-            }}
+          <a
+            href="/operator/attractions#add-attraction"
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary-container py-3 font-label-lg font-bold text-on-secondary-container transition-opacity hover:opacity-90"
           >
             <Icon name="add" />
             Add New Attraction
-          </button>
+          </a>
         </div>
       </aside>
 
@@ -314,17 +307,13 @@ export function OperatorDashboard() {
             <div className="mt-auto border-t border-outline-variant/30 pt-4">
               <p className="font-label-lg font-bold">Kwame Mensah</p>
               <p className="text-xs text-on-surface-variant">Labadi Beach Resort</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setNotice('Attraction management is not connected in this demo.');
-                  setIsMobileMenuOpen(false);
-                }}
+              <a
+                href="/operator/attractions#add-attraction"
                 className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-secondary-container py-3 font-label-lg font-bold text-on-secondary-container"
               >
                 <Icon name="add" />
                 Add New Attraction
-              </button>
+              </a>
             </div>
           </nav>
         </div>
@@ -599,9 +588,9 @@ export function OperatorDashboard() {
         className="fixed bottom-0 z-50 flex w-full justify-around border-t border-outline-variant/20 bg-surface px-2 pt-3 shadow-[0px_-4px_20px_rgba(0,0,0,0.05)] [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
       >
         {[
-          { label: 'Dashboard', icon: 'dashboard', href: '#dashboard', target: 'dashboard' },
-          { label: 'Bookings', icon: 'calendar_month', href: '#recent-bookings', target: 'recent-bookings' },
-          { label: 'Attractions', icon: 'landscape', href: '#attractions', target: 'attractions' },
+          { label: 'Dashboard', icon: 'dashboard', href: '/dashboard', target: '' },
+          { label: 'Bookings', icon: 'calendar_month', href: '/dashboard#recent-bookings', target: '' },
+          { label: 'Attractions', icon: 'landscape', href: '/operator/attractions', target: '' },
           { label: 'Profile', icon: 'person', href: '#profile', target: 'profile' },
         ].map((item) => {
           const active = item.label === 'Dashboard';
@@ -609,15 +598,12 @@ export function OperatorDashboard() {
             <a
               key={item.label}
               href={item.href}
-              aria-current={active ? 'page' : undefined}
+              aria-current={item.label === 'Dashboard' ? 'page' : undefined}
               onClick={(event) => {
                 if (item.target === 'profile') {
                   event.preventDefault();
                   setNotice('Profile settings are not available in this dashboard demo.');
-                  return;
                 }
-                event.preventDefault();
-                scrollTo(item.target);
               }}
               className={`flex min-w-[64px] flex-col items-center justify-center rounded-xl px-3 py-1 transition-all ${
                 active ? 'scale-95 bg-primary-container font-bold text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-variant'
