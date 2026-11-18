@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 type BookingStatus = 'Confirmed' | 'Pending' | 'Cancelled';
 
@@ -61,8 +62,8 @@ const initialBookings: Booking[] = [
 const operatorNavigation = [
   { label: 'Dashboard', icon: 'dashboard', href: '/dashboard', section: true },
   { label: 'Attractions', icon: 'landscape', href: '/operator/attractions', section: true },
-  { label: 'Bookings', icon: 'calendar_month', href: '/dashboard#recent-bookings', section: true },
-  { label: 'Analytics', icon: 'analytics', href: '/dashboard#analytics', section: true },
+  { label: 'Bookings', icon: 'calendar_month', href: '/operator/bookings', section: true },
+  { label: 'Analytics', icon: 'analytics', href: '/operator/analytics', section: true },
   { label: 'Settings', icon: 'settings', href: '#', section: false },
 ];
 
@@ -428,13 +429,19 @@ export function OperatorDashboard() {
             <section id="recent-bookings" aria-labelledby="bookings-heading" className="min-w-0 overflow-hidden rounded-2xl border border-primary/10 bg-white shadow-sm lg:col-span-2">
               <div className="flex items-center justify-between border-b border-outline-variant/20 px-5 py-5 sm:px-6">
                 <h2 id="bookings-heading" className="font-headline-md text-lg text-on-surface">Recent Bookings</h2>
-                <button
-                  type="button"
-                  onClick={() => setShowAllBookings((showingAll) => !showingAll)}
-                  className="font-label-lg text-primary transition-colors hover:underline"
-                >
-                  {showAllBookings ? 'Show Less' : 'View All'}
-                </button>
+                {showAllBookings ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllBookings(false)}
+                    className="font-label-lg text-primary transition-colors hover:underline"
+                  >
+                    Show Less
+                  </button>
+                ) : (
+                  <Link href="/operator/bookings" className="font-label-lg text-primary transition-colors hover:underline">
+                    View All
+                  </Link>
+                )}
               </div>
               <div className="hidden overflow-x-auto md:block">
                 <table className="w-full min-w-[640px] text-left">
@@ -589,8 +596,9 @@ export function OperatorDashboard() {
       >
         {[
           { label: 'Dashboard', icon: 'dashboard', href: '/dashboard', target: '' },
-          { label: 'Bookings', icon: 'calendar_month', href: '/dashboard#recent-bookings', target: '' },
+          { label: 'Bookings', icon: 'calendar_month', href: '/operator/bookings', target: '' },
           { label: 'Attractions', icon: 'landscape', href: '/operator/attractions', target: '' },
+          { label: 'Analytics', icon: 'analytics', href: '/operator/analytics', target: '' },
           { label: 'Profile', icon: 'person', href: '#profile', target: 'profile' },
         ].map((item) => {
           const active = item.label === 'Dashboard';

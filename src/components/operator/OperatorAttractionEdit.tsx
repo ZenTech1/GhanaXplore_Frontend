@@ -21,7 +21,7 @@ const navigation = [
   { label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
   { label: 'Attractions', icon: 'landscape', href: '/operator/attractions' },
   { label: 'Bookings', icon: 'event_available', href: '/dashboard#recent-bookings' },
-  { label: 'Analytics', icon: 'analytics', href: '/dashboard#analytics' },
+  { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
   { label: 'Settings', icon: 'settings', href: '#' },
 ];
 
