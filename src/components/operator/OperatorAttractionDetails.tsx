@@ -13,7 +13,7 @@ const navigation = [
   { label: 'Attractions', icon: 'landscape', href: '/operator/attractions' },
   { label: 'Bookings', icon: 'calendar_month', href: '/dashboard#recent-bookings' },
   { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
-  { label: 'Settings', icon: 'settings', href: '#' },
+  { label: 'Settings', icon: 'settings', href: '/operator/settings' },
 ];
 
 function Icon({

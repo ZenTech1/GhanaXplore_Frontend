@@ -64,7 +64,7 @@ const operatorNavigation = [
   { label: 'Attractions', icon: 'landscape', href: '/operator/attractions', section: true },
   { label: 'Bookings', icon: 'calendar_month', href: '/operator/bookings', section: true },
   { label: 'Analytics', icon: 'analytics', href: '/operator/analytics', section: true },
-  { label: 'Settings', icon: 'settings', href: '#', section: false },
+  { label: 'Settings', icon: 'settings', href: '/operator/settings', section: true },
 ];
 
 function Icon({
@@ -599,7 +599,7 @@ export function OperatorDashboard() {
           { label: 'Bookings', icon: 'calendar_month', href: '/operator/bookings', target: '' },
           { label: 'Attractions', icon: 'landscape', href: '/operator/attractions', target: '' },
           { label: 'Analytics', icon: 'analytics', href: '/operator/analytics', target: '' },
-          { label: 'Profile', icon: 'person', href: '#profile', target: 'profile' },
+          { label: 'Profile', icon: 'person', href: '/operator/settings', target: '' },
         ].map((item) => {
           const active = item.label === 'Dashboard';
           return (
@@ -607,12 +607,6 @@ export function OperatorDashboard() {
               key={item.label}
               href={item.href}
               aria-current={item.label === 'Dashboard' ? 'page' : undefined}
-              onClick={(event) => {
-                if (item.target === 'profile') {
-                  event.preventDefault();
-                  setNotice('Profile settings are not available in this dashboard demo.');
-                }
-              }}
               className={`flex min-w-[64px] flex-col items-center justify-center rounded-xl px-3 py-1 transition-all ${
                 active ? 'scale-95 bg-primary-container font-bold text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-variant'
               }`}

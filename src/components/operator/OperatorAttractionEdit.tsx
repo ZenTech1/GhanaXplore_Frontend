@@ -22,7 +22,7 @@ const navigation = [
   { label: 'Attractions', icon: 'landscape', href: '/operator/attractions' },
   { label: 'Bookings', icon: 'event_available', href: '/dashboard#recent-bookings' },
   { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
-  { label: 'Settings', icon: 'settings', href: '#' },
+  { label: 'Settings', icon: 'settings', href: '/operator/settings' },
 ];
 
 const regions = [

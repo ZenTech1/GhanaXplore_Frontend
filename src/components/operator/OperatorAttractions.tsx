@@ -17,7 +17,7 @@ const operatorNavigation = [
   { label: 'Attractions', icon: 'landscape', href: '/operator/attractions' },
   { label: 'Bookings', icon: 'calendar_month', href: '/dashboard#recent-bookings' },
   { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
-  { label: 'Settings', icon: 'settings', href: '#' },
+  { label: 'Settings', icon: 'settings', href: '/operator/settings' },
 ];
 
 const statusStyles: Record<AttractionStatus, string> = {
@@ -700,20 +700,10 @@ export function OperatorAttractions() {
             { label: 'Attractions', icon: 'location_on', href: '/operator/attractions' },
             { label: 'Bookings', icon: 'calendar_month', href: '/dashboard#recent-bookings' },
             { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
-            { label: 'Profile', icon: 'account_circle', href: '#' },
+            { label: 'Profile', icon: 'account_circle', href: '/operator/settings' },
           ].map((item) => {
             const active = item.label === 'Attractions';
-            return item.href === '#' ? (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => setNotice('Profile settings are not available in this demo.')}
-                className="flex h-16 w-16 flex-col items-center justify-center gap-1 text-on-surface-variant"
-              >
-                <Icon name={item.icon} />
-                <span className="text-label-sm">{item.label}</span>
-              </button>
-            ) : (
+            return (
               <a
                 key={item.label}
                 href={item.href}

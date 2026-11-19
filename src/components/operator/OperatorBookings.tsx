@@ -96,6 +96,7 @@ export function OperatorBookings() {
             { label: 'Attractions', icon: 'landscape', href: '/operator/attractions' },
             { label: 'Bookings', icon: 'calendar_month', href: '/operator/bookings' },
             { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
+            { label: 'Settings', icon: 'settings', href: '/operator/settings' },
           ].map((item) => {
             const active = item.label === 'Bookings';
             return (
@@ -378,7 +379,7 @@ export function OperatorBookings() {
           { label: 'Bookings', icon: 'calendar_month', href: '/operator/bookings' },
           { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
           { label: 'Attractions', icon: 'landscape', href: '/operator/attractions' },
-          { label: 'Profile', icon: 'person', href: '/dashboard#profile' },
+          { label: 'Profile', icon: 'person', href: '/operator/settings' },
         ].map((item) => {
           const active = item.label === 'Bookings';
           return (

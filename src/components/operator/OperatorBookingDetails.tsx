@@ -130,6 +130,7 @@ export function OperatorBookingDetails({ booking }: { booking: Booking }) {
             { label: 'Attractions', icon: 'landscape', href: '/operator/attractions' },
             { label: 'Bookings', icon: 'calendar_month', href: '/operator/bookings' },
             { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
+            { label: 'Settings', icon: 'settings', href: '/operator/settings' },
           ].map((item) => {
             const active = item.label === 'Bookings';
             return (
@@ -366,7 +367,7 @@ export function OperatorBookingDetails({ booking }: { booking: Booking }) {
           { label: 'Bookings', icon: 'calendar_month', href: '/operator/bookings' },
           { label: 'Analytics', icon: 'analytics', href: '/operator/analytics' },
           { label: 'Attractions', icon: 'landscape', href: '/operator/attractions' },
-          { label: 'Profile', icon: 'person', href: '/dashboard#profile' },
+          { label: 'Profile', icon: 'person', href: '/operator/settings' },
         ].map((item) => (
           <Link key={item.label} href={item.href} aria-current={item.label === 'Bookings' ? 'page' : undefined} className={`flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] ${item.label === 'Bookings' ? 'font-bold text-primary' : 'text-on-surface-variant'}`}>
             <Icon name={item.icon} />

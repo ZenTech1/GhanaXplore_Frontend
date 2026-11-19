@@ -143,7 +143,7 @@ export function OperatorAnalytics() {
 
   const mobileNavigation = [
     ...navigation,
-    { label: 'Settings', icon: 'settings', href: '#settings' },
+    { label: 'Settings', icon: 'settings', href: '/operator/settings' },
   ];
 
   return (
@@ -172,10 +172,10 @@ export function OperatorAnalytics() {
               </Link>
             );
           })}
-          <button type="button" onClick={() => setNotice('Settings are not connected in this demo.')} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-label-lg text-on-surface-variant transition-colors hover:bg-surface-container">
+          <Link href="/operator/settings" className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-label-lg text-on-surface-variant transition-colors hover:bg-surface-container">
             <Icon name="settings" />
             Settings
-          </button>
+          </Link>
         </nav>
       </aside>
 
@@ -507,14 +507,6 @@ export function OperatorAnalytics() {
       <nav aria-label="Mobile operator navigation" className="fixed inset-x-0 bottom-0 z-50 flex h-20 items-center justify-around border-t border-outline-variant/20 bg-surface-container px-2 shadow-[0_-1px_8px_rgba(0,0,0,0.05)] md:hidden">
         {mobileNavigation.map((item) => {
           const active = item.label === 'Analytics';
-          if (item.label === 'Settings') {
-            return (
-              <button key={item.label} type="button" onClick={() => setNotice('Settings are not connected in this demo.')} className="flex min-w-[56px] flex-col items-center gap-1 text-on-surface-variant">
-                <span className="flex h-8 w-16 items-center justify-center"><Icon name={item.icon} /></span>
-                <span className="text-[11px]">Settings</span>
-              </button>
-            );
-          }
           return (
             <Link key={item.label} href={item.href} aria-current={active ? 'page' : undefined} className={`flex min-w-[56px] flex-col items-center gap-1 ${active ? 'font-bold text-on-surface' : 'text-on-surface-variant'}`}>
               <span className={`flex h-8 w-16 items-center justify-center rounded-full ${active ? 'bg-primary-container text-on-primary-container' : ''}`}><Icon name={item.icon} /></span>
